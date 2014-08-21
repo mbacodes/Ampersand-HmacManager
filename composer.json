@@ -1,0 +1,24 @@
+{
+    "name": "Ampersand/HMAC",
+    "description": "HMAC Authorization Middleware",
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "Mathias Bauer",
+            "email": "info@mbauer.eu"
+        }
+    ],
+    "license": "GPLv3",
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.2.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ampersand\\": "src/",
+            "Ampersand\\Tests\\": "tests/"
+        }
+    }
+}
