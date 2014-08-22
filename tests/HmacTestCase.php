@@ -45,10 +45,12 @@ class HmacTestCase extends \PHPUnit_Framework_TestCase
     public function setup()
     {
         // Mock the Headers
-        $this->headers = $this->getMock('\Ampersand\Http\HeadersInterface');
+        $headers       = $this->getMock('\Ampersand\Http\HeadersInterface');
+        $this->headers = $headers;
 
         // Mock the Request
-        $this->request = $this->getMock('\Ampersand\Http\RequestInterface');
+        $request       = $this->getMock('\Ampersand\Http\RequestInterface');
+        $this->request = $request;
 
         // Mock the Response
         $this->response = $this->getMock('\Ampersand\Http\ResponseInterface');

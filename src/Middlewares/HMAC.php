@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * File         HMACInterface.php
+ * File         HMAC.php
  *
  * @author      Mathias Bauer <info@mbauer.eu>
  * @copyright   ${COPYRIGHT}
@@ -14,9 +14,7 @@ namespace Ampersand\Middlewares;
 
 /**
  *
- * Interface        HMACMiddlewareInterface
- *
- * Interface for a middleware for HMAC Authorization
+ * Class        HMAC
  *
  * @package     Ampersand\Middlewares
  *
@@ -25,16 +23,19 @@ namespace Ampersand\Middlewares;
  * @link        ${LINK}
  * @license     ${LICENSE}
  * @version     ${VERSION}
- * @package     Ampersand
+ * @package     ${PACKAGE}
  */
-interface HMACMiddlewareInterface
+class HMAC implements HMACMiddlewareInterface
 {
+
     /**
      * Deny Access
      *
      */
-    public function deny_access();
-
+    public function deny_access()
+    {
+        // TODO: Implement deny_access() method.
+    }
 
     /**
      * Check Timestamp
@@ -42,8 +43,10 @@ interface HMACMiddlewareInterface
      * Uses the header value timestamp to check against the current timestamp
      * If the request was made within a reasonable amount of time (@see HMAC->ttl, e.g. 10 sec),
      */
-    public function check_timestamp();
-
+    public function check_timestamp()
+    {
+        // TODO: Implement check_timestamp() method.
+    }
 
     /**
      * Authenticate
@@ -51,8 +54,10 @@ interface HMACMiddlewareInterface
      * This is the authenticate method where we check the hash from the client against
      * a hash that we will recreate here on the sevrer. If the 2 match, it's a pass.
      */
-    public function authenticate($nonce);
-
+    public function authenticate($nonce)
+    {
+        // TODO: Implement authenticate() method.
+    }
 
     /**
      * Create Hash
@@ -60,7 +65,8 @@ interface HMACMiddlewareInterface
      * This method is where we'll recreate the hash coming from the client using the secret key to authenticate the
      * request
      */
-    public function create_hash($payload, $timestamp);
-
-
+    public function create_hash($payload, $timestamp)
+    {
+        // TODO: Implement create_hash() method.
+    }
 }
