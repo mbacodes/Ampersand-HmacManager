@@ -29,44 +29,18 @@ class HMAC implements HMACMiddlewareInterface
 {
 
     /**
-     * Deny Access
+     * Check HMAC
      *
      */
-    public function deny_access()
+    public function call()
     {
-        // TODO: Implement deny_access() method.
-    }
+        // determine what kind of HMAC check is needed
+        // check for request
+        // check for response
+        // check how the data is transfered header|cookies
+        // use a factory to generate the HMAC-Object
+        // call HMAC->isValid to validate
 
-    /**
-     * Check Timestamp
-     *
-     * Uses the header value timestamp to check against the current timestamp
-     * If the request was made within a reasonable amount of time (@see HMAC->ttl, e.g. 10 sec),
-     */
-    public function check_timestamp()
-    {
-        // TODO: Implement check_timestamp() method.
-    }
-
-    /**
-     * Authenticate
-     *
-     * This is the authenticate method where we check the hash from the client against
-     * a hash that we will recreate here on the sevrer. If the 2 match, it's a pass.
-     */
-    public function authenticate($nonce)
-    {
-        // TODO: Implement authenticate() method.
-    }
-
-    /**
-     * Create Hash
-     *
-     * This method is where we'll recreate the hash coming from the client using the secret key to authenticate the
-     * request
-     */
-    public function create_hash($payload, $timestamp)
-    {
-        // TODO: Implement create_hash() method.
+        // TODO: Implement call() method.
     }
 }

@@ -12,6 +12,8 @@
  */
 namespace Ampersand\Auth;
 
+use Exception;
+
 /**
  *
  * Class        HMAC
@@ -28,48 +30,248 @@ namespace Ampersand\Auth;
 class HMAC implements HMACInterface
 {
     /**
-     * @var string
-     */
-    private $publicHash = '';
-
-    /**
-     * @var string
-     */
-    private $privateHash = '';
-
-    /**
-     * @var string
-     */
-    private $payload = '';
-
-    /**
-     * @var string
-     */
-    private $algorithm = '';
-
-    /**
-     * nonce / token
-     * against reply attacks
+     * Indicate where to find the hmac
      *
-     * @var string
+     * e.g 'request|header|X-HMAC'
+     * tells HMAC to search for the HMAC_HASH in the request headers in the header X-HMAC
+     *
+     * @var null|string
      */
-    private $nonce = '';
+    private $hmacKey = null;
+
+    /**
+     * Indicate where to find the timestamp information
+     *
+     * e.g 'response|header|X-TIMESTAMP'
+     * tells HMAC to search for the timestamp in the response headers in the header X-TIMESTAMP
+     *
+     * @var null|string
+     */
+    private $timestampKey = null;
+
+    /**
+     * Indicate where to find the token information
+     *
+     * @see $this->hmacKey
+     *
+     * @var null|string
+     */
+    private $tokenKey = null;
+
+    /**
+     * Indicate where to find the payload that was used to generate the HMAC
+     *
+     * @see $this->hmacKey
+     *
+     * @var null|string
+     */
+    private $payloadKey = null;
+
+    /**
+     * Indicate where to find the api-key used for authentication
+     *
+     * @see $this->hmacKey
+     *
+     * @var null|string
+     */
+    private $apiKey = null;
+
+    /**
+     * The private key that is used for encryption
+     *
+     * @see $this->hmacKey
+     *
+     * @var null|string
+     */
+    private $privateKey = null;
+
+    /** The payload that is|was used to build the hmac
+     *
+     * @var null|string
+     */
+    private $payload = null;
+
+    /**
+     * @var null|string
+     */
+    private $algorithm = 'sha256';
+
+    /**
+     * token / nonce against reply attacks
+     * The token is build by creating a payload out of the 'api-key.timestamp' and then encrypt it with the private-key
+     *
+     * @var null|string
+     */
+    private $token = null;
+
+    /**
+     * The HMAC that is generated with the payload and the private-key
+     *
+     * @var null|string
+     */
+    private $hmacHash = null;
 
     /**
      * Time to live
      *
      * @see HMACInterface->check_timestamp
-     * @var string
+     * @var null|string
      */
-    private $ttl = '';
+    private $ttl = null;
 
     /**
      *
      * against reply attacks
      *
-     * @var string
+     * null|string
      */
-    private $timestamp = '';
+    private $timestamp = null;
+
+    /**
+     * @var \Ampersand\Http\RequestInterface
+     */
+    private $request = null;
+
+    /**
+     * @var \Ampersand\Http\ResponseInterface
+     */
+    private $response = null;
+
+    /**
+     * @var null|\Ampersand\Http\CookiesInterface
+     */
+    private $cookies = null;
+
+    /**
+     * @param mixed $cookie
+     */
+    public function setCookies($cookie)
+    {
+        $this->cookies = $cookie;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCookies()
+    {
+        return $this->cookies;
+    }
+
+    /**
+     * @param mixed $request
+     */
+    public function setRequest($request)
+    {
+        $this->request = $request;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequest()
+    {
+        return $this->request;
+    }
+
+    /**
+     * @param mixed $response
+     */
+    public function setResponse($response)
+    {
+        $this->response = $response;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
+    /**
+     * @param array $headerKeys
+     *
+     * @return mixed
+     */
+    public function setHeaderKeys(array $headerKeys)
+    {
+        // TODO: Implement setHeaderKeys() method.
+    }
+
+    /**
+     * @return array
+     */
+    public function getHeaderKeys()
+    {
+        // TODO: Implement getHeaderKeys() method.
+    }
+
+    /**
+     * @param string $hmacHeaderKey
+     */
+    public function setHmacKey($hmacHeaderKey)
+    {
+        $this->hmacKey = $hmacHeaderKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHmacKey()
+    {
+        return $this->hmacKey;
+    }
+
+    /**
+     * @param string $nonceHeaderKey
+     */
+    public function setTokenKey($nonceHeaderKey)
+    {
+        $this->tokenKey = $nonceHeaderKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTokenKey()
+    {
+        return $this->tokenKey;
+    }
+
+    /**
+     * @param string $payloadHeaderKey
+     */
+    public function setPayloadKey($payloadHeaderKey)
+    {
+        $this->payloadKey = $payloadHeaderKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPayloadKey()
+    {
+        return $this->payloadKey;
+    }
+
+    /**
+     * @param string $timestampHeaderKey
+     */
+    public function setTimestampKey($timestampHeaderKey)
+    {
+        $this->timestampKey = $timestampHeaderKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTimestampKey()
+    {
+        return $this->timestampKey;
+    }
+
 
     /**
      * @param string $ttl
@@ -80,6 +282,7 @@ class HMAC implements HMACInterface
     }
 
     /**
+     * @throws \Exception
      * @return string
      */
     public function getTtl()
@@ -106,17 +309,17 @@ class HMAC implements HMACInterface
     /**
      * @param string $nonce
      */
-    public function setNonce($nonce)
+    public function setToken($nonce)
     {
-        $this->nonce = $nonce;
+        $this->token = $nonce;
     }
 
     /**
      * @return string
      */
-    public function getNonce()
+    public function getToken()
     {
-        return $this->nonce;
+        return $this->token;
     }
 
     /**
@@ -138,33 +341,33 @@ class HMAC implements HMACInterface
     /**
      * @param string $privateHash
      */
-    public function setPrivateHash($privateHash)
+    public function setPrivateKey($privateHash)
     {
-        $this->privateHash = $privateHash;
+        $this->privateKey = $privateHash;
     }
 
     /**
      * @return string
      */
-    public function getPrivateHash()
+    public function getPrivateKey()
     {
-        return $this->privateHash;
+        return $this->privateKey;
     }
 
     /**
      * @param string $publicHash
      */
-    public function setPublicHash($publicHash)
+    public function setApiKey($publicHash)
     {
-        $this->publicHash = $publicHash;
+        $this->apiKey = $publicHash;
     }
 
     /**
      * @return string
      */
-    public function getPublicHash()
+    public function getApiKey()
     {
-        return $this->publicHash;
+        return $this->apiKey;
     }
 
     /**
@@ -183,12 +386,135 @@ class HMAC implements HMACInterface
         return $this->timestamp;
     }
 
+    /**
+     * @param null $hmacHash
+     */
+    public function setHmacHash($hmacHash)
+    {
+        $this->hmacHash = $hmacHash;
+    }
 
     /**
-     * @return mixed
+     * @return null
+     */
+    public function getHmacHash()
+    {
+        return $this->hmacHash;
+    }
+
+    /**
+     * @throws \Exception
+     * @return bool
+     */
+    public function checkTimestamp()
+    {
+        if ($this->getTtl() === null) {
+            throw new \Exception('Time to life was not set, use setTtl($timeToLife) before');
+        };
+
+        $isValid = false;
+
+        $clientTime = $this->getTimestamp();
+        $serverTime = time();
+        $timeDiff   = $serverTime - $clientTime;
+
+        if ($timeDiff <= $this->getTtl()) {
+            $isValid = true;
+        }
+
+        return $isValid;
+    }
+
+    /**
+     * Build a token from the api-key.timestamp and the private key
+     *
+     * @return string Token build from the api-key.timestamp and the private key
+     */
+    public function create_token()
+    {
+        $apiKey     = $this->getApiKey();
+        $timestamp  = $this->getTimestamp();
+        $privateKey = $this->getPrivateKey();
+        $token      = $this->create_hash($apiKey . $timestamp, $privateKey);
+
+        return $token;
+    }
+
+    /**
+     * Authenticate
+     *
+     * This is the authenticate method where we check the hash from the client against
+     * a hash that we will recreate here on the server. If the 2 match, it's a pass.
+     */
+    public function authenticate($token)
+    {
+        if ($token === $this->create_token()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Create Hash
+     *
+     * This method is where we'll recreate the hash coming from the client using the secret key to authenticate the
+     * request
+     */
+    public function create_hash($payload, $privateKey)
+    {
+        $hmacHash = hash_hmac($this->getAlgorithm(), $payload, $privateKey);
+
+        return $hmacHash;
+    }
+
+
+    /**
+     * Check if the HMAC from the client matches the on created on the server
+     *
+     * @return bool
+     */
+    public function check_hmac_hash()
+    {
+        $isValid = false;
+        // get the data that was used to generate the client_hmac_hash
+        $payload = $this->getPayload();
+        // rebuild the hash on the server
+        $server_hmac_hash = $this->create_hash($payload, $this->getPrivateKey());
+
+        if ($this->getHmacHash() === $server_hmac_hash) {
+            $isValid = true;
+        }
+
+        return $isValid;
+    }
+
+    /**
+     * Check if the timestamp matches in the range of time to life for
+     * Check if the token matches
+     * Check the HMAC
+     *
+     * @return bool
      */
     public function isValid()
     {
-        // TODO: Implement isValid() method.
+        $isValid = false;
+        // check if timestamp is in ttl
+        if ($this->checkTimestamp()) {
+            // check for a valid token
+            if ($this->authenticate($this->getToken())) {
+                $isValid = $this->check_hmac_hash();
+
+            }
+        }
+
+        return $isValid;
+    }
+
+    private function getKeyByPath($path)
+    {
+        $path = explode('|', $path);
+
+        return $path;
     }
 }
