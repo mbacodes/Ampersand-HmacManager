@@ -1,6 +1,6 @@
 <?php
 /**
- * Interface after the implementation by Slim Framework
+ * Interface following the implementation by Slim Framework
  *
  * Slim - a micro PHP 5 framework
  *
@@ -35,7 +35,7 @@
 namespace Ampersand\Http;
 
 /**
- * HTTP Request Interface after the Slim Framework implementation
+ * HTTP Request Interface following the Slim Framework implementation
  *
  * This class provides a human-friendly interface to the Slim environment variables;
  * environment variables are passed by reference and will be modified directly.
