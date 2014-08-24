@@ -8,6 +8,8 @@
  */
 namespace Ampersand\Tests;
 
+use Xpmock\TestCaseTrait;
+
 /**
  *
  * Class        HmacTestCase
@@ -17,6 +19,8 @@ namespace Ampersand\Tests;
  */
 class HmacTestCase extends \PHPUnit_Framework_TestCase
 {
+    use TestCaseTrait;
+
     /**
      * @var \Ampersand\Http\HeadersInterface
      */
@@ -54,11 +58,14 @@ class HmacTestCase extends \PHPUnit_Framework_TestCase
         $this->headers = $headers;
 
         // Mock the Request
-        $request       = $this->getMock('\Ampersand\Http\RequestInterface');
+        $request = $this->getMock('\Ampersand\Http\RequestInterface');
+        //$request->injectTo($this->headers, 'headers');
         $this->request = $request;
 
         // Mock the Response
-        $this->response = $this->getMock('\Ampersand\Http\ResponseInterface');
+        $response = $this->getMock('\Ampersand\Http\ResponseInterface');
+        //$response->headers($this->headers);
+        $this->response = $response;
 
         // Mock the cookies
         $this->cookies = $this->getMock('\Ampersand\Http\CookiesInterface');

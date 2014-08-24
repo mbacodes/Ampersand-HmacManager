@@ -31,12 +31,16 @@ class HMACTest extends HmacTestCase
 
 
         $request = $this->request;
+        $headers = $this->mock('\Ampersand\Http\Headers')->new();
         // Configure the stub.
-        $request->method('headers')->willReturn(array('X-HMAC' => 'some hmac hash'));
-
+        $request = $this->mock('\Ampersand\Http\RequestInterface', ['getNumber' => 1])
+            ->__set('headers', $headers)
+            ->new();
+        $request->method('headers')->with('X-HMAC')->willReturn(array('X-HMAC' => 'some hmac hash'));
+        $hmac->setRequest($request);
         $hmac->setHmacKey('request|headers|X-HMAC');
 
-        $this->assertEquals('some hmac hash', $hmac->getHmacHash());
+        $this->assertEquals(array('X-HMAC' => 'some hmac hash'), $hmac->getHmacHash());
 
     }
 

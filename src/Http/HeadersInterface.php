@@ -50,9 +50,15 @@ interface HeadersInterface
 
     /**
      * Extract HTTP headers from an array of data (e.g. $_SERVER)
+     *
      * @param  array $data
+     *
      * @return array
      */
     public static function extract($data);
+
+    public function get($key);
+
+    public function set($key, $value);
 
 }

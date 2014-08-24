@@ -32,7 +32,7 @@ class HMAC implements HMACInterface
     /**
      * Indicate where to find the hmac
      *
-     * e.g 'request|header|X-HMAC'
+     * e.g 'Slim\Http\Request|header|X-HMAC'
      * tells HMAC to search for the HMAC_HASH in the request headers in the header X-HMAC
      *
      * @var null|string
@@ -399,6 +399,12 @@ class HMAC implements HMACInterface
      */
     public function getHmacHash()
     {
+        if ($this->hmacHash === null && $this->getHmacKey() !== null) {
+            // try to get it form $this->hmacHashKey
+            $hmacHash       = $this->getKeyByPath($this->getHmacKey());
+            $this->hmacHash = $hmacHash;
+        }
+
         return $this->hmacHash;
     }
 
@@ -434,6 +440,15 @@ class HMAC implements HMACInterface
     {
         $apiKey     = $this->getApiKey();
         $timestamp  = $this->getTimestamp();
+        $privateKey = $this->getPrivateKey();
+        $token      = $this->create_hash($apiKey . $timestamp, $privateKey);
+
+        return $token;
+    }
+
+    public function create_token_for_timestamp($timestamp)
+    {
+        $apiKey     = $this->getApiKey();
         $privateKey = $this->getPrivateKey();
         $token      = $this->create_hash($apiKey . $timestamp, $privateKey);
 
@@ -511,10 +526,12 @@ class HMAC implements HMACInterface
         return $isValid;
     }
 
-    private function getKeyByPath($path)
+    public function create_and_set_hmac()
     {
-        $path = explode('|', $path);
+        $timestamp = time();
+        $this->setTimestamp($timestamp);
+        $this->setToken($this->create_token_for_timestamp($timestamp));
 
-        return $path;
+        $this->setHmacHash($this->create_hash($this->getPayload(), $this->getPrivateKey()));
     }
 }
