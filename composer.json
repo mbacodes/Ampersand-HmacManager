@@ -1,5 +1,5 @@
 {
-    "name": "Ampersand/HmacManager",
+    "name": "ampersand/hmacmanager",
     "description": "HMAC Authorization Manager",
     "license": "GPLv3",
     "minimum-stability": "stable",
