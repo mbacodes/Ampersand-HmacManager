@@ -102,6 +102,11 @@ class HmacManager
      */
     public function setAlgorithm($algorithm)
     {
+        try {
+            $this->checkValue($algorithm);
+        } catch (Exception $e) {
+            throw new \InvalidArgumentException ('$algorithm cant be a null or empty!');
+        }
         $this->algorithm = $algorithm;
     }
 
@@ -115,9 +120,16 @@ class HmacManager
 
     /**
      * @param null $apiKey
+     *
+     * @throws \InvalidArgumentException
      */
     public function setApiKey($apiKey)
     {
+        try {
+            $this->checkValue($apiKey);
+        } catch (Exception $e) {
+            throw new \InvalidArgumentException ('$apiKey cant be a null or empty!');
+        }
         $this->apiKey = $apiKey;
     }
 
@@ -132,9 +144,16 @@ class HmacManager
 
     /**
      * @param null|string $hmacHash
+     *
+     * @throws \InvalidArgumentException
      */
     public function setHmacHash($hmacHash)
     {
+        try {
+            $this->checkValue($hmacHash);
+        } catch (Exception $e) {
+            throw new \InvalidArgumentException ('$hmacHash cant be a null or empty!');
+        }
         $this->hmacHash = $hmacHash;
     }
 
@@ -163,15 +182,22 @@ class HmacManager
     }
 
     /**
-     * @param null $privateKey
+     * @param null|string $privateKey
+     *
+     * @throws \InvalidArgumentException
      */
     public function setPrivateKey($privateKey)
     {
+        try {
+            $this->checkValue($privateKey);
+        } catch (Exception $e) {
+            throw new \InvalidArgumentException ('$privateKey cant be a null or empty!');
+        }
         $this->privateKey = $privateKey;
     }
 
     /**
-     * @return null
+     * @return null|string
      */
     public function getPrivateKey()
     {
@@ -179,15 +205,25 @@ class HmacManager
     }
 
     /**
-     * @param mixed $timestamp
+     * @param integer $timestamp
+     *
+     * @throws \InvalidArgumentException
      */
     public function setTimestamp($timestamp)
     {
-        $this->timestamp = $timestamp;
+        try {
+            $this->checkValue($timestamp);
+        } catch (Exception $e) {
+            throw new \InvalidArgumentException ('$timestamp cant be a null or empty!');
+        }
+        if ($timestamp < 0) {
+            throw new \InvalidArgumentException ('$timestamp cant be a negative value negative!');
+        }
+        $this->timestamp = intval($timestamp);
     }
 
     /**
-     * @return mixed
+     * @return null|integer
      */
     public function getTimestamp()
     {
@@ -196,9 +232,16 @@ class HmacManager
 
     /**
      * @param null|string $token
+     *
+     * @throws \InvalidArgumentException
      */
     public function setToken($token)
     {
+        try {
+            $this->checkValue($token);
+        } catch (Exception $e) {
+            throw new \InvalidArgumentException ('$token cant be a null or empty!');
+        }
         $this->token = $token;
     }
 
@@ -211,11 +254,21 @@ class HmacManager
     }
 
     /**
-     * @param null|string $ttl
+     * @param null|integer $ttl
+     *
+     * @throws \InvalidArgumentException
      */
     public function setTtl($ttl)
     {
-        $this->ttl = $ttl;
+        try {
+            $this->checkValue($ttl);
+        } catch (Exception $e) {
+            throw new \InvalidArgumentException ('$ttl cant be a null or empty!');
+        }
+        if ($ttl < 0) {
+            throw new \InvalidArgumentException ('$ttl cant be a negative value negative!');
+        }
+        $this->ttl = intval($ttl);
     }
 
     /**
@@ -288,7 +341,6 @@ class HmacManager
             $this->checkValue($ttl);
             $this->checkValue($clientTime);
 
-            $clientTime = $this->getTimestamp();
             $serverTime = time();
             $timeDiff   = $serverTime - $clientTime;
 

@@ -23,9 +23,10 @@ use Ampersand\Tests\HmacTestCase;
  */
 class HMACTest extends HmacTestCase
 {
-
+    private $algorithm = 'sha256';
     private $private_key = 'e249c439ed7697df2a4b045d97d4b9b7e1854c3ff8dd668c779013653913572e';
     private $api_key = '3441df0babc2a2dda551d7cd39fb235bc4e09cd1e4556bf261bb49188f548348';
+    private $timestamp = 1408811262;
 
     /**
      * @expectedException
@@ -33,6 +34,7 @@ class HMACTest extends HmacTestCase
     public function testCheckTimestampThrowsExceptionWhenNoTTLSet()
     {
         // init HMAC
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac = new HmacManager();
         // ttl is null as default
         $hmac->setTimestamp(time());
@@ -41,12 +43,51 @@ class HMACTest extends HmacTestCase
         });
     }
 
-    public function testCheckTimestampFailsWhenNoClientTimestampSet()
+    /**
+     * @expectedException
+     */
+    public function testCheckTimestampThrowsExceptionWhenNoClientTimestampSet()
     {
         // init HMAC
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac = new HmacManager();
         $hmac->setTtl(10);
-        $this->assertFalse($hmac->checkTimestamp());
+        $this->assertException(function () use ($hmac) {
+            $hmac->checkTimestamp();
+        });
+    }
+
+    public function testCreateTokenThrowsExceptionWhenApiKeyNotSet()
+    {
+        /** @var \Ampersand\Auth\HmacManager $hmac */
+        $hmac = new HmacManager();
+        $hmac->setTimestamp(time());
+        $hmac->setPrivateKey($this->private_key);
+        $this->assertException(function () use ($hmac) {
+            $hmac->create_token();
+        });
+    }
+
+    public function testCreateTokenThrowsExceptionWhenTimestampNotSet()
+    {
+        /** @var \Ampersand\Auth\HmacManager $hmac */
+        $hmac = new HmacManager();
+        $hmac->setApiKey($this->api_key);
+        $hmac->setPrivateKey($this->private_key);
+        $this->assertException(function () use ($hmac) {
+            $hmac->create_token();
+        });
+    }
+
+    public function testCreateTokenThrowsExceptionWhenPrivateKeyNotSet()
+    {
+        /** @var \Ampersand\Auth\HmacManager $hmac */
+        $hmac = new HmacManager();
+        $hmac->setTimestamp(time());
+        $hmac->setApiKey($this->api_key);
+        $this->assertException(function () use ($hmac) {
+            $hmac->create_token();
+        });
     }
 
     public function testCreateHmacHash()
@@ -55,24 +96,74 @@ class HMACTest extends HmacTestCase
         $payload = json_encode(array(
                                    'test' => 'content'
                                ));
+        // use implementation in this class to create the hash
+        $hash_expected = $this->generate_hash($this->algorithm, $payload, $this->private_key);
 
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac = new HmacManager();
-        $hmac->setPrivateKey($this->private_key);
-        $hmac->setApiKey($this->api_key);
-        $hash = $hmac->create_hash($payload, $this->private_key);
         // expected hash
-        $hash_expected = 'b136a45e55f0d452dc9b7fb29bd1b5de5262e7eec4a50c4934fc503b3d8635c2';
-        $this->assertEquals($hash_expected, $hash);
+        $this->assertEquals($hash_expected, $hmac->create_hash($payload, $this->private_key));
     }
 
+    public function testCreateHmacHashThrowsExceptionOnEmptyPrivateKey()
+    {
+        /** @var \Ampersand\Auth\HmacManager $hmac */
+        $hmac = new HmacManager();
+        // expected hash
+        $this->assertException(function () use ($hmac) {
+            // payload
+            $payload = json_encode(array(
+                                       'test' => 'content'
+                                   ));
+            $hmac->create_hash($payload, null);
+        });
+    }
+
+    public function testSetTtlThrowsExceptionOnTtlSmallerZero()
+    {
+        $this->assertException(function () {
+            // init HMAC
+            /** @var \Ampersand\Auth\HmacManager $hmac */
+            $hmac = new HmacManager();
+            // set time to life
+            $hmac->setTtl(-1);
+        });
+    }
+
+    public function testSetTimestampThrowsExceptionOnValueSmallerZero()
+    {
+        $this->assertException(function () {
+            // init HMAC
+            /** @var \Ampersand\Auth\HmacManager $hmac */
+            $hmac = new HmacManager();
+            // set time to life
+            $hmac->setTimestamp(-1);
+        });
+    }
+
+    /**
+     * Check if a timstamp in rage of time to life returns true
+     */
     public function testCheckTimestamp()
     {
         // init HMAC
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac = new HmacManager();
         // set time to life
         $hmac->setTimestamp(time());
         $hmac->setTtl(1000);
         $this->assertTrue($hmac->checkTimestamp());
+    }
+
+    public function testCheckTimestampFails()
+    {
+        // init HMAC
+        /** @var \Ampersand\Auth\HmacManager $hmac */
+        $hmac = new HmacManager();
+        // set time to life
+        $hmac->setTimestamp($this->timestamp);
+        $hmac->setTtl(1);
+        $this->assertFalse($hmac->checkTimestamp());
     }
 
     public function testCreate_Token()
@@ -88,10 +179,11 @@ class HMACTest extends HmacTestCase
         $timestamp = time();
         $token     = $this->getTokenForTimestamp($timestamp);
 
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac = $this->initHmacWithKeys();
         $hmac->setTimestamp($timestamp);
 
-        $this->assertTrue($hmac->authenticate($token));
+        $this->assertTrue($hmac->check_token($token));
     }
 
     public function testAuthenticateFailForNonCorrectToken()
@@ -99,16 +191,19 @@ class HMACTest extends HmacTestCase
         $timestamp = time();
         $token     = $this->getTokenForTimestamp($timestamp);
 
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac = $this->initHmacWithKeys();
+
         $hmac->setTimestamp(333666999);
 
-        $this->assertFalse($hmac->authenticate($token));
+        $this->assertFalse($hmac->check_token($token));
     }
 
     public function testIsValidSuccess()
     {
-        $timestamp = time();
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac      = $this->initHmacWithKeys();
+        $timestamp = time();
         $hmac->setTimestamp($timestamp);
         $hmac->setTtl(1000);
         $token = $this->getTokenForTimestamp($timestamp);
@@ -125,8 +220,10 @@ class HMACTest extends HmacTestCase
 
     public function testIsValidFailsOnTimestamp()
     {
-        $timestamp = 333666999;
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac      = $this->initHmacWithKeys();
+
+        $timestamp = 333666999;
         $hmac->setTimestamp($timestamp);
         $hmac->setTtl(1);
         $token = $this->getTokenForTimestamp($timestamp);
@@ -143,8 +240,10 @@ class HMACTest extends HmacTestCase
 
     public function testIsValidFailsOnToken()
     {
-        $timestamp = time();
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac      = $this->initHmacWithKeys();
+
+        $timestamp = time();
         $hmac->setTimestamp($timestamp);
         $hmac->setTtl(1000);
         $token = $this->getTokenForTimestamp($timestamp + 10);
@@ -161,8 +260,10 @@ class HMACTest extends HmacTestCase
 
     public function testIsValidFailsOnWrongPrivateKey()
     {
-        $timestamp = time();
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac      = $this->initHmacWithKeys();
+
+        $timestamp = time();
         $hmac->setTimestamp($timestamp);
         $hmac->setTtl(1000);
         $token = $this->getTokenForTimestamp($timestamp);
@@ -184,14 +285,12 @@ class HMACTest extends HmacTestCase
      *
      * @return string
      */
-    private function getTokenForTimestamp($timestamp = 1408811262)
+    private function getTokenForTimestamp($timestamp = null)
     {
-        $hmac = new HmacManager();
-        $hmac->setPrivateKey($this->private_key);
-        $hmac->setApiKey($this->api_key);
-        $hmac->setTimestamp($timestamp);
-
-        $token = $hmac->create_token();
+        if ($timestamp === null) {
+            $timestamp = $this->timestamp;
+        }
+        $token = $this->generate_hash($this->algorithm, $this->api_key . $timestamp, $this->private_key);
 
         return $token;
     }
@@ -201,10 +300,25 @@ class HMACTest extends HmacTestCase
      */
     private function initHmacWithKeys()
     {
+        /** @var \Ampersand\Auth\HmacManager $hmac */
         $hmac = new HmacManager();
         $hmac->setApiKey($this->api_key);
         $hmac->setPrivateKey($this->private_key);
 
         return $hmac;
+    }
+
+    /**
+     * Creates a HMAC hash
+     *
+     * @param $algorithm
+     * @param $payload
+     * @param $privateKey
+     *
+     * @return string
+     */
+    public function generate_hash($algorithm, $payload, $privateKey)
+    {
+        return hash_hmac($algorithm, $payload, $privateKey);
     }
 }
