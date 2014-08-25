@@ -28,29 +28,6 @@ class HMACTest extends HmacTestCase
     private $api_key = '3441df0babc2a2dda551d7cd39fb235bc4e09cd1e4556bf261bb49188f548348';
 
     /**
-     * Check if the string that is used to point to the info e.g the hmac_hash
-     * 'request|headers|X-HMAC' contains any usefull information
-     */
-    public function testIfDataCanFromRequestHeaders()
-    {
-        $hmac = new HmacManager();
-
-
-        $request = $this->request;
-        $headers = $this->mock('\Ampersand\Http\Headers')->new();
-        // Configure the stub.
-        $request = $this->mock('\Ampersand\Http\RequestInterface', ['getNumber' => 1])
-            ->__set('headers', $headers)
-            ->new();
-        $request->method('headers')->with('X-HMAC')->willReturn(array('X-HMAC' => 'some hmac hash'));
-        $hmac->setRequest($request);
-        $hmac->setHmacKey('request|headers|X-HMAC');
-
-        $this->assertEquals(array('X-HMAC' => 'some hmac hash'), $hmac->getHmacHash());
-
-    }
-
-    /**
      * @expectedException
      */
     public function testCheckTimestampThrowsExceptionWhenNoTTLSet()

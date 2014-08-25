@@ -8,6 +8,7 @@
  */
 namespace Ampersand\Tests;
 
+use Ampersand\Auth\HmacManager;
 use Xpmock\TestCaseTrait;
 
 /**
@@ -23,20 +24,18 @@ class HmacTestCase extends \PHPUnit_Framework_TestCase
 {
     use TestCaseTrait;
 
-
-    // We support these methods for testing. These are available via
-    // `this->get()` and `$this->post()`. This is accomplished with the
-    // `__call()` magic method below.
-    private $testingMethods = array('get', 'post', 'patch', 'put', 'delete', 'head');
-
     // Run for each unit test to setup our app environment
     /**
-     * Mock headers, request and response
+     * Mock something
      */
     public function setup()
     {
         // set defaults
+    }
 
+    public function testHmacManagerInstanceOfHmacManager()
+    {
+        $this->assertInstanceOf('\Ampersand\Auth\HmacManager', new HmacManager());
     }
 
     /**
