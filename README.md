@@ -1,6 +1,6 @@
 Ampersand HMAC
 ==============
 
-# A Middleware for HMAC Authorization
+# A HMAC Authorization Manager
 
 ### Version 0.0.1-alpha

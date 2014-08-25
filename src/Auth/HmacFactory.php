@@ -20,11 +20,7 @@ namespace Ampersand\Auth;
  * @package     Ampersand\Auth
  *
  * @author      Mathias Bauer <info@mbauer.eu>
- * @copyright   ${COPYRIGHT}
- * @link        ${LINK}
- * @license     ${LICENSE}
- * @version     ${VERSION}
- * @package     ${PACKAGE}
+ * @license     GPLv3
  */
 class HmacFactory
 {

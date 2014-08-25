@@ -1,6 +1,7 @@
 {
-    "name": "Ampersand/HMAC",
+    "name": "Ampersand/HmacManager",
     "description": "HMAC Authorization Manager",
+    "license": "GPLv3",
     "minimum-stability": "stable",
     "authors": [
         {
@@ -8,7 +9,6 @@
             "email": "info@mbauer.eu"
         }
     ],
-    "license": "GPLv3",
     "require": {
         "php": ">=5.4.0"
     },

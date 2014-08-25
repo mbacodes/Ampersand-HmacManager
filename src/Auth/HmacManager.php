@@ -1,14 +1,11 @@
 <?php
 /**
  *
- * File         HMAC.php
+ * File         HmacManager.php
  *
  * @author      Mathias Bauer <info@mbauer.eu>
- * @copyright   ${COPYRIGHT}
- * @link        ${LINK}
- * @license     ${LICENSE}
- * @version     ${VERSION}
- * @package     ${PACKAGE}
+ * @license     GPLv3
+ *
  */
 namespace Ampersand\Auth;
 
@@ -16,74 +13,16 @@ use Exception;
 
 /**
  *
- * Class        HMAC
+ * Class        HmacManager
  *
  * @package     Ampersand\Auth
  *
  * @author      Mathias Bauer <info@mbauer.eu>
- * @copyright   ${COPYRIGHT}
- * @link        ${LINK}
- * @license     ${LICENSE}
- * @version     ${VERSION}
- * @package     ${PACKAGE}
+ * @license     GPLv3
+ *
  */
-class HMAC implements HMACInterface
+class HmacManager
 {
-    /**
-     * Indicate where to find the hmac
-     *
-     * e.g 'Slim\Http\Request|header|X-HMAC'
-     * tells HMAC to search for the HMAC_HASH in the request headers in the header X-HMAC
-     *
-     * @var null|string
-     */
-    private $hmacKey = null;
-
-    /**
-     * Indicate where to find the timestamp information
-     *
-     * e.g 'response|header|X-TIMESTAMP'
-     * tells HMAC to search for the timestamp in the response headers in the header X-TIMESTAMP
-     *
-     * @var null|string
-     */
-    private $timestampKey = null;
-
-    /**
-     * Indicate where to find the token information
-     *
-     * @see $this->hmacKey
-     *
-     * @var null|string
-     */
-    private $tokenKey = null;
-
-    /**
-     * Indicate where to find the payload that was used to generate the HMAC
-     *
-     * @see $this->hmacKey
-     *
-     * @var null|string
-     */
-    private $payloadKey = null;
-
-    /**
-     * Indicate where to find the api-key used for authentication
-     *
-     * @see $this->hmacKey
-     *
-     * @var null|string
-     */
-    private $apiKey = null;
-
-    /**
-     * The private key that is used for encryption
-     *
-     * @see $this->hmacKey
-     *
-     * @var null|string
-     */
-    private $privateKey = null;
 
     /** The payload that is|was used to build the hmac
      *
@@ -126,87 +65,6 @@ class HMAC implements HMACInterface
      * null|string
      */
     private $timestamp = null;
-
-    /**
-     * @var \Ampersand\Http\RequestInterface
-     */
-    private $request = null;
-
-    /**
-     * @var \Ampersand\Http\ResponseInterface
-     */
-    private $response = null;
-
-    /**
-     * @var null|\Ampersand\Http\CookiesInterface
-     */
-    private $cookies = null;
-
-    /**
-     * @param mixed $cookie
-     */
-    public function setCookies($cookie)
-    {
-        $this->cookies = $cookie;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCookies()
-    {
-        return $this->cookies;
-    }
-
-    /**
-     * @param mixed $request
-     */
-    public function setRequest($request)
-    {
-        $this->request = $request;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRequest()
-    {
-        return $this->request;
-    }
-
-    /**
-     * @param mixed $response
-     */
-    public function setResponse($response)
-    {
-        $this->response = $response;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResponse()
-    {
-        return $this->response;
-    }
-
-    /**
-     * @param array $headerKeys
-     *
-     * @return mixed
-     */
-    public function setHeaderKeys(array $headerKeys)
-    {
-        // TODO: Implement setHeaderKeys() method.
-    }
-
-    /**
-     * @return array
-     */
-    public function getHeaderKeys()
-    {
-        // TODO: Implement getHeaderKeys() method.
-    }
 
     /**
      * @param string $hmacHeaderKey

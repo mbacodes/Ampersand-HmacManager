@@ -15,31 +15,13 @@ use Xpmock\TestCaseTrait;
  * Class        HmacTestCase
  *
  * @package     Ampersand\Tests
+ * @author      Mathias Bauer <info@mbauer.eu>
+ * @license     GPLv3
  *
  */
 class HmacTestCase extends \PHPUnit_Framework_TestCase
 {
     use TestCaseTrait;
-
-    /**
-     * @var \Ampersand\Http\HeadersInterface
-     */
-    protected $headers;
-
-    /**
-     * @var \Ampersand\Http\RequestInterface
-     */
-    protected $request;
-
-    /**
-     * @var \Ampersand\Http\ResponseInterface
-     */
-    protected $response;
-
-    /**
-     * @var \Ampersand\Http\CookiesInterface
-     */
-    protected $cookies;
 
 
     // We support these methods for testing. These are available via
@@ -53,98 +35,8 @@ class HmacTestCase extends \PHPUnit_Framework_TestCase
      */
     public function setup()
     {
-        // Mock the Headers
-        $headers       = $this->getMock('\Ampersand\Http\HeadersInterface');
-        $this->headers = $headers;
+        // set defaults
 
-        // Mock the Request
-        $request = $this->getMock('\Ampersand\Http\RequestInterface');
-        //$request->injectTo($this->headers, 'headers');
-        $this->request = $request;
-
-        // Mock the Response
-        $response = $this->getMock('\Ampersand\Http\ResponseInterface');
-        //$response->headers($this->headers);
-        $this->response = $response;
-
-        // Mock the cookies
-        $this->cookies = $this->getMock('\Ampersand\Http\CookiesInterface');
-
-    }
-
-    /**
-     * Test if $this->headers is an instance of Ampersand\Http\HeadersInterface
-     */
-    public function testHeadersIsInstanceOfHeadersInterface()
-    {
-        $this->assertInstanceOf('\Ampersand\Http\HeadersInterface', $this->headers);
-    }
-
-    /**
-     * Test if $this->request is an instance of Ampersand\Http\RequestInterface
-     */
-    public function testRequestIsInstanceOfRequestInterface()
-    {
-        $this->assertInstanceOf('\Ampersand\Http\RequestInterface', $this->request);
-    }
-
-    /**
-     * Test if $this->response is an instance of Ampersand\Http\ResponseInterface
-     */
-    public function testResponseIsInstanceOfResponseInterface()
-    {
-        $this->assertInstanceOf('\Ampersand\Http\ResponseInterface', $this->response);
-    }
-
-    /**
-     * Test if $this->cookies is an instance of Ampersand\Http\CookiesInterface
-     */
-    public function testCookiesIsInstanceOfCookiesInterface()
-    {
-        $this->assertInstanceOf('\Ampersand\Http\CookiesInterface', $this->cookies);
-    }
-
-
-
-    // Abstract way to make a request to SlimPHP, this allows us to mock the
-    // slim environment
-    /**
-     * @todo-comment
-     * @todo-implement
-     */
-    private function setRequest($method, $path, $formVars = array(), $optionalHeaders = array())
-    {
-
-    }
-
-    /**
-     * @todo-comment
-     * @todo-implement
-     */
-    public function setResponse()
-    {
-
-    }
-
-    /**
-     * @todo-comment
-     * @todo-implement
-     */
-    public function setCookies()
-    {
-
-    }
-
-
-    // Implement our `get`, `post`, and other http operations
-    public function __call($method, $arguments)
-    {
-        if (in_array($method, $this->testingMethods)) {
-            list($path, $formVars, $headers) = array_pad($arguments, 3, array());
-
-            return $this->setRequest($method, $path, $formVars, $headers);
-        }
-        throw new \BadMethodCallException(strtoupper($method) . ' is not supported');
     }
 
     /**

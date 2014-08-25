@@ -10,10 +10,10 @@
          stopOnFailure="false"
          syntaxCheck="false"
          bootstrap="vendor/autoload.php"
->
+        >
     <testsuites>
-        <testsuite name="HMAC Middlewares test suite">
-            <directory>./tests/Middlewares</directory>
+        <testsuite name="HMAC encryption test suite">
+            <directory>./tests/Auth</directory>
         </testsuite>
     </testsuites>
     <filter>
