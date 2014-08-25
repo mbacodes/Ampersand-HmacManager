@@ -23,17 +23,53 @@ use Exception;
  */
 class HmacManager
 {
-
-    /** The payload that is|was used to build the hmac
-     *
-     * @var null|string
+    /*
+     * #########################################
+     * CLASS ATTRIBUTES
+     * #########################################
      */
-    private $payload = null;
-
     /**
      * @var null|string
      */
     private $algorithm = 'sha256';
+
+    /**
+     * The Api-Key that is used to build the token
+     *
+     * @var null|string
+     */
+    private $apiKey = null;
+
+    /**
+     * The private key that is used for encryption
+     * WARNING! Never send this key over unsecured lines.
+     *
+     * @var null|string
+     */
+    private $privateKey = null;
+
+    /**
+     * Time to live
+     *
+     * @see HMACInterface->check_timestamp
+     * @var null|string
+     */
+    private $ttl = null;
+
+    /**
+     *
+     * Timestamp to use against reply attacks
+     *
+     * null|string
+     */
+    private $timestamp = null;
+
+    /**
+     * Should the Hmac-Manager work with tokens
+     *
+     * @var bool
+     */
+    private $useToken = true;
 
     /**
      * token / nonce against reply attacks
@@ -50,106 +86,19 @@ class HmacManager
      */
     private $hmacHash = null;
 
-    /**
-     * Time to live
+    /** The payload that is|was used to build the hmac
      *
-     * @see HMACInterface->check_timestamp
      * @var null|string
      */
-    private $ttl = null;
+    private $payload = null;
 
-    /**
-     *
-     * against reply attacks
-     *
-     * null|string
+    /*
+     * #########################################
+     * GETTERS / SETTERS
+     * #########################################
      */
-    private $timestamp = null;
-
     /**
-     * @param string $hmacHeaderKey
-     */
-    public function setHmacKey($hmacHeaderKey)
-    {
-        $this->hmacKey = $hmacHeaderKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getHmacKey()
-    {
-        return $this->hmacKey;
-    }
-
-    /**
-     * @param string $nonceHeaderKey
-     */
-    public function setTokenKey($nonceHeaderKey)
-    {
-        $this->tokenKey = $nonceHeaderKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTokenKey()
-    {
-        return $this->tokenKey;
-    }
-
-    /**
-     * @param string $payloadHeaderKey
-     */
-    public function setPayloadKey($payloadHeaderKey)
-    {
-        $this->payloadKey = $payloadHeaderKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPayloadKey()
-    {
-        return $this->payloadKey;
-    }
-
-    /**
-     * @param string $timestampHeaderKey
-     */
-    public function setTimestampKey($timestampHeaderKey)
-    {
-        $this->timestampKey = $timestampHeaderKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTimestampKey()
-    {
-        return $this->timestampKey;
-    }
-
-
-    /**
-     * @param string $ttl
-     */
-    public function setTtl($ttl)
-    {
-        $this->ttl = $ttl;
-    }
-
-    /**
-     * @throws \Exception
-     * @return string
-     */
-    public function getTtl()
-    {
-        return $this->ttl;
-    }
-
-    /**
-     * @param string $algorithm
+     * @param null|string $algorithm
      */
     public function setAlgorithm($algorithm)
     {
@@ -157,7 +106,7 @@ class HmacManager
     }
 
     /**
-     * @return string
+     * @return null|string
      */
     public function getAlgorithm()
     {
@@ -165,59 +114,11 @@ class HmacManager
     }
 
     /**
-     * @param string $nonce
+     * @param null $apiKey
      */
-    public function setToken($nonce)
+    public function setApiKey($apiKey)
     {
-        $this->token = $nonce;
-    }
-
-    /**
-     * @return string
-     */
-    public function getToken()
-    {
-        return $this->token;
-    }
-
-    /**
-     * @param string $payload
-     */
-    public function setPayload($payload)
-    {
-        $this->payload = $payload;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPayload()
-    {
-        return $this->payload;
-    }
-
-    /**
-     * @param string $privateHash
-     */
-    public function setPrivateKey($privateHash)
-    {
-        $this->privateKey = $privateHash;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPrivateKey()
-    {
-        return $this->privateKey;
-    }
-
-    /**
-     * @param string $publicHash
-     */
-    public function setApiKey($publicHash)
-    {
-        $this->apiKey = $publicHash;
+        $this->apiKey = $apiKey;
     }
 
     /**
@@ -226,6 +127,55 @@ class HmacManager
     public function getApiKey()
     {
         return $this->apiKey;
+    }
+
+
+    /**
+     * @param null|string $hmacHash
+     */
+    public function setHmacHash($hmacHash)
+    {
+        $this->hmacHash = $hmacHash;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getHmacHash()
+    {
+        return $this->hmacHash;
+    }
+
+    /**
+     * @param null|string $payload
+     */
+    public function setPayload($payload)
+    {
+        $this->payload = $payload;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getPayload()
+    {
+        return $this->payload;
+    }
+
+    /**
+     * @param null $privateKey
+     */
+    public function setPrivateKey($privateKey)
+    {
+        $this->privateKey = $privateKey;
+    }
+
+    /**
+     * @return null
+     */
+    public function getPrivateKey()
+    {
+        return $this->privateKey;
     }
 
     /**
@@ -245,81 +195,119 @@ class HmacManager
     }
 
     /**
-     * @param null $hmacHash
+     * @param null|string $token
      */
-    public function setHmacHash($hmacHash)
+    public function setToken($token)
     {
-        $this->hmacHash = $hmacHash;
+        $this->token = $token;
     }
 
     /**
-     * @return null
+     * @return null|string
      */
-    public function getHmacHash()
+    public function getToken()
     {
-        if ($this->hmacHash === null && $this->getHmacKey() !== null) {
-            // try to get it form $this->hmacHashKey
-            $hmacHash       = $this->getKeyByPath($this->getHmacKey());
-            $this->hmacHash = $hmacHash;
+        return $this->token;
+    }
+
+    /**
+     * @param null|string $ttl
+     */
+    public function setTtl($ttl)
+    {
+        $this->ttl = $ttl;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getTtl()
+    {
+        return $this->ttl;
+    }
+
+    /**
+     * @param boolean $useToken
+     */
+    public function setUseToken($useToken)
+    {
+        $this->useToken = $useToken;
+    }
+
+    /*
+     * #########################################
+     * PUBLIC METHODS
+     * #########################################
+     */
+    /**
+     * Check if the timestamp matches in the range of time to life for
+     * Check if the token matches
+     * Check the HMAC
+     *
+     * @throws \Exception
+     * @return bool
+     */
+    public function isValid()
+    {
+        try {
+            $isValid = false;
+            // check if a token is used
+            if ($this->useToken) {
+                // check if timestamp is in ttl
+                if ($this->checkTimestamp()) {
+                    // check for a valid token
+                    if ($this->check_token($this->getToken())) {
+                        $isValid = $this->check_hmac_hash();
+                    }
+                }
+            } else {
+                $isValid = $this->check_hmac_hash();
+            }
+
+            return $isValid;
+        } catch (Exception $e) {
+            throw $e;
         }
-
-        return $this->hmacHash;
     }
 
     /**
+     * Check if the timestamp is in range of time to life
+     *
      * @throws \Exception
      * @return bool
      */
     public function checkTimestamp()
     {
-        if ($this->getTtl() === null) {
-            throw new \Exception('Time to life was not set, use setTtl($timeToLife) before');
-        };
 
-        $isValid = false;
+        try {
+            $isValid = false;
 
-        $clientTime = $this->getTimestamp();
-        $serverTime = time();
-        $timeDiff   = $serverTime - $clientTime;
+            $ttl        = $this->getTtl();
+            $clientTime = $this->getTimestamp();
 
-        if ($timeDiff <= $this->getTtl()) {
-            $isValid = true;
+            $this->checkValue($ttl);
+            $this->checkValue($clientTime);
+
+            $clientTime = $this->getTimestamp();
+            $serverTime = time();
+            $timeDiff   = $serverTime - $clientTime;
+
+            if ($timeDiff <= $this->getTtl()) {
+                $isValid = true;
+            }
+
+            return $isValid;
+        } catch (Exception $e) {
+            throw $e;
         }
-
-        return $isValid;
     }
 
     /**
-     * Build a token from the api-key.timestamp and the private key
-     *
-     * @return string Token build from the api-key.timestamp and the private key
+     * Check if the token is valid
+     * This will build a token form the api key, timestamp and private key and check if it matches the passed token
+     * This requires the api key and private key to be set, not null and not empty (@see $this->create_token())
      */
-    public function create_token()
-    {
-        $apiKey     = $this->getApiKey();
-        $timestamp  = $this->getTimestamp();
-        $privateKey = $this->getPrivateKey();
-        $token      = $this->create_hash($apiKey . $timestamp, $privateKey);
-
-        return $token;
-    }
-
-    public function create_token_for_timestamp($timestamp)
-    {
-        $apiKey     = $this->getApiKey();
-        $privateKey = $this->getPrivateKey();
-        $token      = $this->create_hash($apiKey . $timestamp, $privateKey);
-
-        return $token;
-    }
-
-    /**
-     * Authenticate
-     *
-     * This is the authenticate method where we check the hash from the client against
-     * a hash that we will recreate here on the server. If the 2 match, it's a pass.
-     */
-    public function authenticate($token)
+    public function check_token($token)
     {
         if ($token === $this->create_token()) {
             return true;
@@ -329,67 +317,140 @@ class HmacManager
     }
 
     /**
+     * Build a token from the api-key.timestamp and the private key
+     * This requires the api key, private key and timestamp to be set, not null and not empty
+     *
+     *
+     * @throws \Exception
+     * @return string Token build from the api-key.timestamp and the private key
+     */
+    public function create_token()
+    {
+        try {
+            $apiKey     = $this->getApiKey();
+            $timestamp  = $this->getTimestamp();
+            $privateKey = $this->getPrivateKey();
+
+            $this->checkValue($privateKey);
+            $this->checkValue($apiKey);
+            $this->checkValue($timestamp);
+            $token = $this->create_hash($apiKey . $timestamp, $privateKey);
+
+            return $token;
+        } catch (Exception $e) {
+            throw $e;
+        }
+
+    }
+
+
+    /**
      * Create Hash
      *
-     * This method is where we'll recreate the hash coming from the client using the secret key to authenticate the
+     * This method is where we'll recreate the hash coming from the client using the secret key to check_token the
      * request
      */
     public function create_hash($payload, $privateKey)
     {
-        $hmacHash = hash_hmac($this->getAlgorithm(), $payload, $privateKey);
+        try {
+            // don't accept empty private keys
+            $this->checkValue($privateKey);
+            $hmacHash = hash_hmac($this->getAlgorithm(), $payload, $privateKey);
 
-        return $hmacHash;
+            return $hmacHash;
+        } catch (Exception $e) {
+            throw $e;
+        }
+
     }
-
 
     /**
      * Check if the HMAC from the client matches the on created on the server
      *
+     * @throws \Exception
      * @return bool
      */
     public function check_hmac_hash()
     {
-        $isValid = false;
-        // get the data that was used to generate the client_hmac_hash
-        $payload = $this->getPayload();
-        // rebuild the hash on the server
-        $server_hmac_hash = $this->create_hash($payload, $this->getPrivateKey());
+        try {
+            $isValid = false;
+            $privateKey = $this->getPrivateKey();
+            $this->checkValue($privateKey);
 
-        if ($this->getHmacHash() === $server_hmac_hash) {
-            $isValid = true;
-        }
+            // get the data that was used to generate the client_hmac_hash
+            $payload = $this->getPayload();
+            // rebuild the hash on the server
+            $server_hmac_hash = $this->create_hash($payload, $privateKey);
 
-        return $isValid;
-    }
-
-    /**
-     * Check if the timestamp matches in the range of time to life for
-     * Check if the token matches
-     * Check the HMAC
-     *
-     * @return bool
-     */
-    public function isValid()
-    {
-        $isValid = false;
-        // check if timestamp is in ttl
-        if ($this->checkTimestamp()) {
-            // check for a valid token
-            if ($this->authenticate($this->getToken())) {
-                $isValid = $this->check_hmac_hash();
-
+            if ($this->getHmacHash() === $server_hmac_hash) {
+                $isValid = true;
             }
-        }
 
-        return $isValid;
+            return $isValid;
+        } catch (Exception $e) {
+            throw $e;
+        }
     }
 
     public function create_and_set_hmac()
     {
-        $timestamp = time();
-        $this->setTimestamp($timestamp);
-        $this->setToken($this->create_token_for_timestamp($timestamp));
+        try {
+            if ($this->useToken) {
+                $timestamp = time();
+                $this->setTimestamp($timestamp);
+                $this->setToken($this->create_token_for_timestamp($timestamp));
+            }
+            $privateKey = $this->getPrivateKey();
+            $this->checkValue($privateKey);
+            $this->setHmacHash($this->create_hash($this->getPayload(), $privateKey));
 
-        $this->setHmacHash($this->create_hash($this->getPayload(), $this->getPrivateKey()));
+            return $this;
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Create a token for the passed timestamp.
+     * This requires the api key and private key to be set, not null and not empty
+     *
+     * @param $timestamp
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public function create_token_for_timestamp($timestamp)
+    {
+        try {
+            $apiKey     = $this->getApiKey();
+            $privateKey = $this->getPrivateKey();
+
+            $this->checkValue($privateKey);
+            $this->checkValue($apiKey);
+            $this->checkValue($timestamp);
+
+            $token = $this->create_hash($apiKey . $timestamp, $privateKey);
+
+            return $token;
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
+    /*
+     * #########################################
+     * PRIVAT HELPERS
+     * #########################################
+     */
+    /**
+     * @param $value
+     *
+     * @throws \Exception
+     */
+    private function checkValue($value)
+    {
+        if ($value === null || $value === '') {
+            throw new \Exception ('The passed value was not set, empty or null. Set before usage!');
+        }
     }
 }
